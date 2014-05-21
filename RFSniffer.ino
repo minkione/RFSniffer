@@ -1,14 +1,14 @@
 // RF Sniffer V1.0.7
 // Martinus van den Broek
 // 01-01-2014
-// 
+//
 // Stel de baudrate van de Arduino IDE in op 115200 baud!
 //
 // Based on work by Paul Tonkes (www.nodo-domotica.nl)
 //
-// This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+// This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
 // of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 //
 
@@ -65,16 +65,16 @@ prog_char PROGMEM Text_15[] = "p - change minimum number of pulses (MIN_RAW_PULS
 prog_char PROGMEM Text_16[] = "l - change minimum pulse length (MIN_PULSE_LENGHT)";
 prog_char PROGMEM Text_17[] = "r - change sample resolution (RawSignal.Multiply)";
 
-prog_char PROGMEM Protocol_01[] = "Nodo V2";
-prog_char PROGMEM Protocol_02[] = "Nodo V1";
-prog_char PROGMEM Protocol_03[] = "KAKU V1";
-prog_char PROGMEM Protocol_04[] = "KAKU V2";
-prog_char PROGMEM Protocol_05[] = "Alecto V1";
-prog_char PROGMEM Protocol_06[] = "Alecto V2";
-prog_char PROGMEM Protocol_07[] = "Alecto V3";
-prog_char PROGMEM Protocol_08[] = "Oregon V2";
-prog_char PROGMEM Protocol_09[] = "Flamengo FA20RF";
-prog_char PROGMEM Protocol_10[] = "Home Easy 300EU";
+prog_char PROGMEM Protocol_01[] = "Nodo-V2";
+prog_char PROGMEM Protocol_02[] = "Nodo-V1";
+prog_char PROGMEM Protocol_03[] = "KAKU-V1";
+prog_char PROGMEM Protocol_04[] = "KAKU-V2";
+prog_char PROGMEM Protocol_05[] = "Alecto-V1";
+prog_char PROGMEM Protocol_06[] = "Alecto-V2";
+prog_char PROGMEM Protocol_07[] = "Alecto-V3";
+prog_char PROGMEM Protocol_08[] = "Oregon-V2";
+prog_char PROGMEM Protocol_09[] = "Flamengo-FA20RF";
+prog_char PROGMEM Protocol_10[] = "HomeEasy-300EU";
 prog_char PROGMEM Protocol_11[] = "Unknown";
 
 PROGMEM const char *ProtocolText_tabel[]={Protocol_01,Protocol_02,Protocol_03,Protocol_04,Protocol_05,Protocol_06,Protocol_07,Protocol_08,Protocol_09,Protocol_10,Protocol_11};
@@ -109,13 +109,13 @@ void setup() {
     pinMode(PIN_BIC_0+x,INPUT);
     pinMode(PIN_BIC_0+x,INPUT_PULLUP);
     HW_Config|=digitalRead(PIN_BIC_0+x)<<x;
-    }  
+    }
 
     // Hardware specifieke initialisatie.
   switch(HW_Config&0xf)
-    {    
+    {
     case BIC_DEFAULT:// Standaard Nodo zonder specifike hardware aansturing
-      break;                 
+      break;
 
     case BIC_HWMESH_NES_V1X: // Nodo Ethernet Shield V1.x met Aurel tranceiver. Vereist speciale pulse op PIN_BSF_0 voor omschakelen tussen Rx en Tx.
       pinMode(PIN_BSF_0,OUTPUT);
@@ -198,7 +198,7 @@ void getcommand(void)
   case 'r':
    change_multiply();
    break;
-   
+
   }
 }
 
@@ -320,7 +320,7 @@ void change_multiply(void)
 void bandwidthUsage(void)
 {
   unsigned long lowcounter=0;
-  unsigned long highcounter=0;  
+  unsigned long highcounter=0;
   unsigned long pulscounter=0;
   unsigned long microtimer;
   unsigned long duration;
@@ -350,7 +350,7 @@ void bandwidthUsage(void)
       }
       prevstate = state;
     }
-    if (state==1) highcounter++; 
+    if (state==1) highcounter++;
     else lowcounter++;
   }
   Serial.print(ProgmemString(Text_10));
@@ -397,9 +397,9 @@ boolean AnalyzeRawSignal(byte mode)
   if(oregonv2()) return true;
   if(flamengofa20rf()) return true;
   if(homeeasy()) return true;
-  if (mode > 0) analysepacket(mode); 
+  if (mode > 0) analysepacket(mode);
   else Serial.println("?");
-  return false;   
+  return false;
 }
 
 
@@ -436,7 +436,7 @@ inline boolean FetchSignal(byte DataPin, boolean StateSignal, int TimeOut)
     if(PulseLength<min_pulse_length)
       return false;
 
-    toggle=!toggle;    
+    toggle=!toggle;
 
     // sla op in de tabel RawSignal
     RawSignal.Pulses[RawCodeLength++]=PulseLength/(unsigned long)RawSignal.Multiply;
@@ -459,11 +459,11 @@ inline boolean FetchSignal(byte DataPin, boolean StateSignal, int TimeOut)
 
 void DisplayRawSignal()
 {
-  Serial.print(F("Pulses(uSec)="));      
+  Serial.print(F("Pulses(uSec)="));
   for(int x=1;x<RawSignal.Number;x++)
     {
-      Serial.print(RawSignal.Pulses[x]*RawSignal.Multiply); 
-      Serial.write(',');       
+      Serial.print(RawSignal.Pulses[x]*RawSignal.Multiply);
+      Serial.write(',');
     }
   Serial.println();
 }
@@ -503,7 +503,7 @@ void DisplayHelp(void)
       Serial.println(str);
     }
   Serial.println(ProgmemString(Text_14));
-  free(str);    
+  free(str);
 }
 
 
@@ -517,7 +517,7 @@ void DisplayStats()
   Serial.println();
   Serial.println(ProgmemString(Text_14));
   Serial.println("Statistics:");
-  
+
   for (byte x=0; x < 11; x++)
     {
       strcpy_P(str,(char*)pgm_read_word(&(ProtocolText_tabel[x])));
@@ -526,7 +526,7 @@ void DisplayStats()
       Serial.println(count_protocol[x]);
     }
   Serial.println(ProgmemString(Text_14));
-  free(str);    
+  free(str);
 }
 
 
@@ -559,8 +559,8 @@ void printFreeRam(void)
 }
 
 int freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 

@@ -8,7 +8,7 @@
 
 boolean RawSignal_2_Nodo()
   {
-  
+
   struct DataBlockStruct
     {
       byte SourceUnit;
@@ -19,13 +19,13 @@ boolean RawSignal_2_Nodo()
       byte Par1;
       unsigned long Par2;
       byte Checksum;
-    };  
+    };
 
     byte b,c,x,y,z;
 
   if(RawSignal.Number!=16*sizeof(struct DataBlockStruct)+2)
     return false;
-    
+
   struct DataBlockStruct DataBlock;
   byte *B=(byte*)&DataBlock;
   z=3;
@@ -36,14 +36,14 @@ boolean RawSignal_2_Nodo()
     b=0;
     for(y=0;y<=7;y++)
       {
-      if((RawSignal.Pulses[z]*RawSignal.Multiply)>NODO_PULSE_MID)      
+      if((RawSignal.Pulses[z]*RawSignal.Multiply)>NODO_PULSE_MID)
         b|=1<<y;
       z+=2;
       }
     *(B+x)=b;
-    c^=b;  // bereken checksum: crc-8 uit alle bytes. 
+    c^=b;  // bereken checksum: crc-8 uit alle bytes.
     }
-    
+
     Serial.print(ProgmemString(Protocol_01));
     Serial.print(", C:");
     Serial.print((int)c);
@@ -71,7 +71,7 @@ boolean RawSignal_2_Nodo()
 \*********************************************************************************************/
 boolean RawSignal_2_NodoNew()
   {
-      
+
   struct DataBlockStruct
     {
       byte Version;
@@ -83,13 +83,13 @@ boolean RawSignal_2_NodoNew()
       byte Par1;
       unsigned long Par2;
       byte Checksum;
-    };  
+    };
 
     byte b,x,y,z;
 
   if(RawSignal.Number!=16*sizeof(struct DataBlockStruct)+2)
     return false;
-    
+
   struct DataBlockStruct DataBlock;
   byte *B=(byte*)&DataBlock;
   z=3;
@@ -99,13 +99,13 @@ boolean RawSignal_2_NodoNew()
     b=0;
     for(y=0;y<=7;y++)
       {
-      if((RawSignal.Pulses[z]*RawSignal.Multiply)>NODO_PULSE_MID)      
+      if((RawSignal.Pulses[z]*RawSignal.Multiply)>NODO_PULSE_MID)
         b|=1<<y;
       z+=2;
       }
     *(B+x)=b;
     }
-    
+
     Serial.print(ProgmemString(Protocol_01));
     Serial.print(", V:");
     Serial.print((int)DataBlock.Version);
@@ -143,7 +143,7 @@ boolean RawSignal_2_ClassicNodo()
   z=0;
   for(x=3;x<=RawSignal.Number;x+=2)
     {
-    if((RawSignal.Pulses[x]*RawSignal.Multiply)>NODO_PULSE_MID)      
+    if((RawSignal.Pulses[x]*RawSignal.Multiply)>NODO_PULSE_MID)
       bitstream|=(long)(1L<<z);
     z++;
     }
@@ -164,7 +164,7 @@ boolean RawSignal_2_ClassicNodo()
 /*********************************************************************************************\
  * KAKU Classic protocol
 \*********************************************************************************************/
-#define VALUE_OFF         150 
+#define VALUE_OFF         150
 #define VALUE_ON          151
 #define KAKU_CodeLength    12
 #define KAKU_T            350
@@ -175,41 +175,41 @@ boolean kaku()
       unsigned long bitstream=0;
       byte Par1=0;
       byte Par2=0;
-      
+
       if (RawSignal.Number!=(KAKU_CodeLength*4)+2)return false;
-    
+
       for (i=0; i<KAKU_CodeLength; i++)
         {
         j=(KAKU_T*2)/RawSignal.Multiply;
-        
+
         if      (RawSignal.Pulses[4*i+1]<j && RawSignal.Pulses[4*i+2]>j && RawSignal.Pulses[4*i+3]<j && RawSignal.Pulses[4*i+4]>j) {bitstream=(bitstream >> 1);} // 0
         else if (RawSignal.Pulses[4*i+1]<j && RawSignal.Pulses[4*i+2]>j && RawSignal.Pulses[4*i+3]>j && RawSignal.Pulses[4*i+4]<j) {bitstream=(bitstream >> 1 | (1 << (KAKU_CodeLength-1))); }// 1
         else if (RawSignal.Pulses[4*i+1]<j && RawSignal.Pulses[4*i+2]>j && RawSignal.Pulses[4*i+3]<j && RawSignal.Pulses[4*i+4]<j) {bitstream=(bitstream >> 1); Par1=2;}
         else {return false;} // error
         }
-     
+
       if ((bitstream&0x600)==0x600)
         {
         Par2  = bitstream & 0xFF;
         Par1 |= (bitstream >> 11) & 0x01;
         Serial.print(ProgmemString(Protocol_03));
-        Serial.print(" Address:");
+        Serial.print(" Unit:");
         Serial.write('A' + (Par2 & 0xf));
         if(Par1 & 2) // als 2e bit in commando staat, dan groep.
-          Serial.print((int)0);                // Als Groep, dan adres 0       
+          Serial.print((int)0);                // Als Groep, dan adres 0
         else
-          Serial.print( (int) ((Par2 & 0xf0) >> 4 ) +1 ); // Anders adres toevoegen             
-      
+          Serial.print( (int) ((Par2 & 0xf0) >> 4 ) +1 ); // Anders adres toevoegen
+
         if(Par1 & 0x01)
-          Serial.println(", State:On");  
+          Serial.println(", State:On");
         else
-          Serial.println(", State:Off");  
+          Serial.println(", State:Off");
 
         count_protocol[2]++;
-          
+
         return true;
         }
-        
+
   return false;
 }
 
@@ -231,17 +231,17 @@ boolean newkaku()
       int i;
       int P0,P1,P2,P3;
       byte Par1=0;
-      
+
       if (RawSignal.Number==NewKAKU_RawSignalLength || RawSignal.Number==NewKAKUdim_RawSignalLength)
         {
         i=3;
-        do 
+        do
           {
           P0=RawSignal.Pulses[i]    * RawSignal.Multiply;
           P1=RawSignal.Pulses[i+1]  * RawSignal.Multiply;
           P2=RawSignal.Pulses[i+2]  * RawSignal.Multiply;
           P3=RawSignal.Pulses[i+3]  * RawSignal.Multiply;
-          
+
           if     (P0<NewKAKU_mT && P1<NewKAKU_mT && P2<NewKAKU_mT && P3>NewKAKU_mT)Bit=0; // T,T,T,4T
           else if(P0<NewKAKU_mT && P1>NewKAKU_mT && P2<NewKAKU_mT && P3<NewKAKU_mT)Bit=1; // T,4T,T,T
           else if(P0<NewKAKU_mT && P1<NewKAKU_mT && P2<NewKAKU_mT && P3<NewKAKU_mT)       // T,T,T,T
@@ -251,33 +251,46 @@ boolean newkaku()
             }
           else
             return false; // not valid
-            
+
           if(i<130)
             bitstream=(bitstream<<1) | Bit;
           else
             Par1=(Par1<<1) | Bit;
-       
+
           i+=4;
           }while(i<RawSignal.Number-2);
-            
+
         // Address
         if(bitstream>0xffff)
           address=bitstream &0xFFFFFFCF;
         else
           address=(bitstream>>6)&0xff;
-          
+
         // Command and Dim
         if(i>140)
           Par1++;
         else
           Par1=((bitstream>>4)&0x01)?VALUE_ON:VALUE_OFF;
         Serial.print(ProgmemString(Protocol_04));
+#if 0
         Serial.print(" Address:");
         Serial.print(address,HEX);
+#else
+        Serial.print(" ID:");
+        Serial.print(address>>5,HEX);
+
+        if (((bitstream>>5)&0x01)) {
+	        Serial.print(", All");
+		}
+		else {
+			Serial.print(", Unit:");
+			Serial.print(address&0xF,HEX);
+		}
+#endif
         if(Par1==VALUE_ON)
-          Serial.println(", State:On");  
+          Serial.println(", State:On");
         else if(Par1==VALUE_OFF)
-          Serial.println(", State: Off");
+          Serial.println(", State:Off");
         else
           {
           Serial.print(", Dim:");
@@ -319,13 +332,13 @@ boolean alectov1()
 
       for(byte x=2; x<=64; x=x+2)
       {
-        if(RawSignal.Pulses[x]*RawSignal.Multiply > 0xA00) bitstream = ((bitstream >> 1) |(0x1L << 31)); 
+        if(RawSignal.Pulses[x]*RawSignal.Multiply > 0xA00) bitstream = ((bitstream >> 1) |(0x1L << 31));
         else bitstream = (bitstream >> 1);
       }
 
       for(byte x=66; x<=72; x=x+2)
       {
-        if(RawSignal.Pulses[x]*RawSignal.Multiply > 0xA00) checksum = ((checksum >> 1) |(0x1L << 3)); 
+        if(RawSignal.Pulses[x]*RawSignal.Multiply > 0xA00) checksum = ((checksum >> 1) |(0x1L << 3));
         else checksum = (checksum >> 1);
       }
 
@@ -420,7 +433,7 @@ boolean alectov2()
 
       byte c=0;
       byte rfbit;
-      byte data[9]; 
+      byte data[9];
       byte msgtype=0;
       byte rc=0;
       unsigned int rain=0;
@@ -429,30 +442,30 @@ boolean alectov2()
       byte basevar;
       byte maxidx = 8;
 
-      if(RawSignal.Number > ACH2010_MAX_PULSECOUNT) maxidx = 9;  
+      if(RawSignal.Number > ACH2010_MAX_PULSECOUNT) maxidx = 9;
       // Get message back to front as the header is almost never received complete for ACH2010
       byte idx = maxidx;
       for(byte x=RawSignal.Number; x>0; x=x-2)
         {
-          if(RawSignal.Pulses[x-1]*RawSignal.Multiply < 0x300) rfbit = 0x80; else rfbit = 0;  
+          if(RawSignal.Pulses[x-1]*RawSignal.Multiply < 0x300) rfbit = 0x80; else rfbit = 0;
           data[idx] = (data[idx] >> 1) | rfbit;
           c++;
-          if (c == 8) 
+          if (c == 8)
           {
             if (idx == 0) break;
             c = 0;
             idx--;
-          }   
+          }
         }
 
       checksum = data[maxidx];
       checksumcalc = ProtocolAlectoCRC8(data, maxidx);
-  
+
       msgtype = (data[0] >> 4) & 0xf;
       rc = (data[0] << 4) | (data[1] >> 4);
 
       if (checksum != checksumcalc) return false;
-  
+
       if ((msgtype != 10) && (msgtype != 5)) return true;
       Serial.print(ProgmemString(Protocol_06));
       Serial.print(", ID:");
@@ -476,7 +489,7 @@ boolean alectov2()
           Serial.print(", WindDir:");
           Serial.print((float)(data[8] & 0xf));
         }
-   Serial.println("");        
+   Serial.println("");
    count_protocol[5]++;
    return true;
 }
@@ -503,10 +516,10 @@ boolean alectov3()
       byte data[6];
 
       // get first 32 relevant bits
-      for(byte x=15; x<=77; x=x+2) if(RawSignal.Pulses[x]*RawSignal.Multiply < 0x300) bitstream1 = (bitstream1 << 1) | 0x1; 
+      for(byte x=15; x<=77; x=x+2) if(RawSignal.Pulses[x]*RawSignal.Multiply < 0x300) bitstream1 = (bitstream1 << 1) | 0x1;
       else bitstream1 = (bitstream1 << 1);
       // get second 32 relevant bits
-      for(byte x=79; x<=141; x=x+2) if(RawSignal.Pulses[x]*RawSignal.Multiply < 0x300) bitstream2 = (bitstream2 << 1) | 0x1; 
+      for(byte x=79; x<=141; x=x+2) if(RawSignal.Pulses[x]*RawSignal.Multiply < 0x300) bitstream2 = (bitstream2 << 1) | 0x1;
       else bitstream2 = (bitstream2 << 1);
 
       data[0] = (bitstream1 >> 24) & 0xff;
@@ -589,7 +602,7 @@ boolean oregonv2()
       byte y = 1;
       byte c = 1;
       byte rfbit = 1;
-      byte sync = 0; 
+      byte sync = 0;
       int id = 0;
       byte checksum = 0;
       byte checksumcalc = 0;
@@ -613,7 +626,7 @@ boolean oregonv2()
           {
             sync = (sync >> 1) | (rfbit << 3);
             sync = sync & 0xf;
-            if (sync == 0xA) 
+            if (sync == 0xA)
             {
               c = 2;
               if (x < 40) return false;
@@ -629,10 +642,10 @@ boolean oregonv2()
       }
       // if no sync pattern match found, return
       if (c == 1) return false;
-      
+
       // calculate sensor ID
       id = (nibble[3] << 16) |(nibble[2] << 8) | (nibble[1] << 4) | nibble[0];
- 
+
       // calculate and verify checksum
       for(byte x=0; x<12;x++) checksumcalc += nibble[x];
       checksum = (nibble[13] << 4) | nibble[12];
@@ -678,7 +691,7 @@ boolean flamengofa20rf()
     for(byte x=4;x<=50;x=x+2)
       {
         if (RawSignal.Pulses[x-1]*RawSignal.Multiply > 1000) return false; // every preceding puls must be < 1000!
-        if (RawSignal.Pulses[x]*RawSignal.Multiply > 1800) bitstream = (bitstream << 1) | 0x1; 
+        if (RawSignal.Pulses[x]*RawSignal.Multiply > 1800) bitstream = (bitstream << 1) | 0x1;
         else bitstream = bitstream << 1;
       }
     if (bitstream == 0) return false;
@@ -706,12 +719,12 @@ boolean homeeasy()
       byte state = 0;
       unsigned long channel = 0;
 
-      // valid messages are 116 pulses          
+      // valid messages are 116 pulses
       if (RawSignal.Number != 116) return false;
 
       for(byte x=1;x<=RawSignal.Number;x=x+2)
       {
-        if ((RawSignal.Pulses[x]*RawSignal.Multiply < 500) & (RawSignal.Pulses[x+1]*RawSignal.Multiply > 500)) 
+        if ((RawSignal.Pulses[x]*RawSignal.Multiply < 500) & (RawSignal.Pulses[x+1]*RawSignal.Multiply > 500))
           rfbit = 1;
         else
           rfbit = 0;
@@ -730,17 +743,17 @@ boolean homeeasy()
       // Set bit 5 based on command information in the Home Easy protocol
       if (state == 1) address = address & 0xFFFFFEF;
       else address = address | 0x00000010;
-
       Serial.print(ProgmemString(Protocol_10));
       Serial.print(", Address:");
       Serial.print(address);
+
       if (state == 0)
         Serial.println(", State:On");
       else
         Serial.println(", State:Off");
 
       count_protocol[9]++;
-      return true;      
+      return true;
 }
 
 
@@ -750,7 +763,7 @@ boolean homeeasy()
 void analysepacket(byte mode)
 {
       if(RawSignal.Number<8)return;
- 
+
       Serial.print("Unknown");
       Serial.print(", Pulses:");
       Serial.print(RawSignal.Number);
@@ -758,7 +771,7 @@ void analysepacket(byte mode)
 
       int x;
       unsigned int y,z;
-    
+
       unsigned int MarkShort=50000;
       unsigned int MarkLong=0;
       for(x=5;x<RawSignal.Number;x+=2)
@@ -789,7 +802,7 @@ void analysepacket(byte mode)
           }
         }
       unsigned int MarkMid=((MarkLong-MarkShort)/2)+MarkShort;
-  
+
       unsigned int SpaceShort=50000;
       unsigned int SpaceLong=0;
       for(x=4;x<RawSignal.Number;x+=2)
@@ -820,7 +833,7 @@ void analysepacket(byte mode)
           }
         }
       int SpaceMid=((SpaceLong-SpaceShort)/2)+SpaceShort;
-    
+
       // Bepaal soort signaal
       y=0;
       if(MarkLong  > (2*MarkShort  ))y=1; // PWM
@@ -862,7 +875,7 @@ void analysepacket(byte mode)
             Serial.write('1');
           else
             Serial.write('0');
-          
+
           y=RawSignal.Pulses[x+1]*RawSignal.Multiply;
           if(y>SpaceMid)
             Serial.write('1');
@@ -874,11 +887,11 @@ void analysepacket(byte mode)
 
       if (mode == 2)
         {
-          Serial.print(F(", Pulses(uSec)="));      
+          Serial.print(F(", Pulses(uSec)="));
           for(x=1;x<RawSignal.Number;x++)
             {
-              Serial.print(RawSignal.Pulses[x]*RawSignal.Multiply); 
-              Serial.write(',');       
+              Serial.print(RawSignal.Pulses[x]*RawSignal.Multiply);
+              Serial.write(',');
             }
         }
       count_protocol[10]++;
