@@ -15,6 +15,11 @@
 /*********************************************************************************************\
  * Do not change anything below this line!
 \*********************************************************************************************/
+#include "pins_arduino.h"
+#include <EEPROM.h>
+#include <Wire.h>
+#include <avr/pgmspace.h>
+typedef unsigned char byte;
 
 // check if on Mega hardware
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -46,7 +51,7 @@
 
 #define RAW_BUFFER_SIZE            256 // Maximum number of RF pulses that can be captured
 #define SIGNAL_TIMEOUT_RF            5 // Pulse timings beyond this value indicate end of message
-
+#if 0
 prog_char PROGMEM Text_01[] = "RF Sniffer V1.0.7";
 prog_char PROGMEM Text_02[] = "Licensed under GNU General Public License.";
 prog_char PROGMEM Text_03[] = "1 - Normal scan mode";
@@ -78,7 +83,39 @@ prog_char PROGMEM Protocol_10[] = "HomeEasy-300EU";
 prog_char PROGMEM Protocol_11[] = "Unknown";
 
 PROGMEM const char *ProtocolText_tabel[]={Protocol_01,Protocol_02,Protocol_03,Protocol_04,Protocol_05,Protocol_06,Protocol_07,Protocol_08,Protocol_09,Protocol_10,Protocol_11};
+#else
+const char Text_01[] PROGMEM = "RF Sniffer V1.0.7";
+const char Text_02[] PROGMEM = "Licensed under GNU General Public License.";
+const char Text_03[] PROGMEM = "1 - Normal scan mode";
+const char Text_04[] PROGMEM = "2 - Include raw data for unknown signals";
+const char Text_05[] PROGMEM = "3 - Show raw data for unknown signals";
+const char Text_06[] PROGMEM = "4 - Show signal ratio and pulsecount";
+const char Text_07[] PROGMEM = "5 - Dump ALL RF signals as raw data";
+const char Text_08[] PROGMEM = "6 - Dump ALL RF signals, pulse info only";
+const char Text_09[] PROGMEM = "9 - Show statistics";
+const char Text_10[] PROGMEM = "Signal Ratio:";
+const char Text_11[] PROGMEM = "%, Pulsecount:";
+const char Text_12[] PROGMEM = ", Shortest:";
+const char Text_13[] PROGMEM = ", Longest:";
+const char Text_14[] PROGMEM = "**********************************************************************";
+const char Text_15[] PROGMEM = "p - change minimum number of pulses (MIN_RAW_PULSES)";
+const char Text_16[] PROGMEM = "l - change minimum pulse length (MIN_PULSE_LENGHT)";
+const char Text_17[] PROGMEM = "r - change sample resolution (RawSignal.Multiply)";
 
+const char Protocol_01[] PROGMEM = "Nodo-V2";
+const char Protocol_02[] PROGMEM = "Nodo-V1";
+const char Protocol_03[] PROGMEM = "KAKU-V1";
+const char Protocol_04[] PROGMEM = "KAKU-V2";
+const char Protocol_05[] PROGMEM = "Alecto-V1";
+const char Protocol_06[] PROGMEM = "Alecto-V2";
+const char Protocol_07[] PROGMEM = "Alecto-V3";
+const char Protocol_08[] PROGMEM = "Oregon-V2";
+const char Protocol_09[] PROGMEM = "Flamengo-FA20RF";
+const char Protocol_10[] PROGMEM = "HomeEasy-300EU";
+const char Protocol_11[] PROGMEM = "Unknown";
+
+PGM_P const ProtocolText_tabel[]={Protocol_01,Protocol_02,Protocol_03,Protocol_04,Protocol_05,Protocol_06,Protocol_07,Protocol_08,Protocol_09,Protocol_10,Protocol_11};
+#endif
 uint8_t RFbit,RFport;
 
 struct RawSignalStruct
@@ -499,8 +536,9 @@ void DisplayHelp(void)
   Serial.println("Supported Protocols:");
   for (byte x=0; x < 10; x++)
     {
-      strcpy_P(str,(char*)pgm_read_word(&(ProtocolText_tabel[x])));
-      Serial.println(str);
+      //strcpy_P(str,(char*)pgm_read_word(&(ProtocolText_tabel[x])));
+      //Serial.println(str);
+        Serial.println(ProgmemString(ProtocolText_tabel[x]));
     }
   Serial.println(ProgmemString(Text_14));
   free(str);
@@ -520,8 +558,9 @@ void DisplayStats()
 
   for (byte x=0; x < 11; x++)
     {
-      strcpy_P(str,(char*)pgm_read_word(&(ProtocolText_tabel[x])));
-      Serial.print(str);
+      //strcpy_P(str,(char*)pgm_read_word(&(ProtocolText_tabel[x])));
+      //Serial.print(str);
+      Serial.print(ProgmemString(ProtocolText_tabel[x]));
       Serial.print(":");
       Serial.println(count_protocol[x]);
     }
@@ -534,7 +573,7 @@ void DisplayStats()
  * Display string from progmem
 \*********************************************************************************************/
 
-char* ProgmemString(prog_char* text)
+char* ProgmemString(PGM_P const text)
 {
   byte x=0;
   static char buffer[80];
